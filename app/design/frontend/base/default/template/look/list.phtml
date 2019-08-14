@@ -1,0 +1,26 @@
+<?php $lookcollection = Mage::getModel('look/look')->getCollection()->addFieldToFilter('status',2); ?>
+<?php 
+	$lookProd = Mage::getModel('look/product')->getCollection(); 
+?>
+
+<?php if(count($lookcollection)): ?>		
+		<?php $looks = $this->getLooks() ?>
+		<?php foreach($looks as $look): ?>			
+			<div class="lookthumb">
+				<div class="thumbimage">
+					<a href="<?php echo Mage::getBaseUrl('web') ?>look/index/index/id/<?php echo $look->getId() ?>">
+						<img src="<?php echo Mage::getBaseUrl('media') ?>look/tn/<?php echo $look->getFilename() ?>" />				
+					</a>
+				</div>
+				<div class="lookname_list">
+					<?php echo $this->__('Name : ').$look->getLookName(); ?>
+				</div>
+				<div class="lookcat">
+					<?php echo $this->__('Category : ').$look->getCategoryName(); ?>
+				</div>
+			</div>		
+		<?php endforeach; ?>
+<?php else: ?>				
+		<?php $message = $this->__('There are no looks available'); ?>
+		<?php echo $this->getLayout()->createBlock('core/messages')->addNotice($message)->toHtml(); ?>	
+<?php endif;?>

@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<layout version="0.1.0">
+    <look_adminhtml_look_index>
+        <reference name="content">
+            <block type="look/adminhtml_look" name="look" />
+        </reference>
+    </look_adminhtml_look_index>
+    <look_adminhtml_category_index>
+        <reference name="content">
+            <block type="look/adminhtml_category" name="category" />
+        </reference>
+    </look_adminhtml_category_index>
+</layout>

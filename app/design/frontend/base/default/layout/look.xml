@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<layout version="0.1.0">
+	<default>
+		<reference name="top.links">
+			<action method="addLink" ifconfig="two/three/text1"  translate="label title">
+				<label>Looks</label>
+				<url>look/index/list</url>
+				<title>Looks</title>
+				<prepare>true</prepare>
+				<position>1</position>
+			</action>
+		</reference>		
+	</default>
+    <look_index_index>
+		<reference name="head">
+			<action method="addJs"><script>look/jquery.js</script></action>
+			<action method="addJs"><script>look/jquery.noConflict.js</script></action>			
+			<action method="addItem"><type>skin_css</type><name>css/look/look.css</name></action>
+		</reference>
+		<reference name="root">
+			<block type="look/look" name="look-indexright" template="look/indexleft.phtml" />      
+			<action method="setTemplate"><template>page/look/2columns-look-index-right.phtml</template></action>
+		</reference>
+		<reference name="content">
+			<block type="look/look" name="look" template="look/index.phtml"></block>
+		</reference>
+    </look_index_index>
+    <look_index_list>
+    	<reference name="root">
+			<block type="look/filter" name="customleft" template="look/left.phtml" />      
+			<action method="setTemplate"><template>page/look/2columns-look-left.phtml</template></action>
+        </reference>
+        <reference name="content">
+            <block type="look/look" name="look" template="look/looklist.phtml" />
+        </reference>
+		<reference name="head">
+			<action method="addJs"><script>look/jquery.js</script></action>
+			<action method="addJs"><script>look/jquery.noConflict.js</script></action>			
+			<action method="addItem"><type>skin_css</type><name>css/look/look.css</name></action>
+			<action method="setTitle"><title>Make Your Look</title></action>
+		</reference>
+    </look_index_list>
+	<look_index_ajax>
+		<block type="look/look" name="look" output="toHtml" template="look/list.phtml" />
+	</look_index_ajax>	
+</layout>

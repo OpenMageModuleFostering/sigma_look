@@ -1,0 +1,123 @@
+<?php 
+$look = $this->getLook();
+$_helper = $this->helper('catalog/output');
+$products = $this->getProducts();
+
+$lookId = $this->getRequest()->getParam('id');
+$lookCollection = Mage::getModel('look/look')->getCollection()->addFieldToFilter('look_id',$lookId)->addFieldToFilter('status', 2);
+
+?>
+<?php if( count($lookCollection) ) :  ?>
+				<div class="look-left">
+					<div class="look-details">
+						<div class="lookname"><span><?php echo $this->__('Look : '); ?></span><?php echo $look->getLookName() ?></div>						
+					</div>
+					
+					<img id="main-look-img" src="<?php echo Mage::getBaseUrl('media') ?>look/<?php echo $look->getFilename() ?>" />
+					<?php foreach($products as $product): ?>
+						<?php $cords = explode(",", $product->getIconLocation()) ?>
+						<img src="<?php echo $this->getSkinUrl('images/look/', array('_area'=>'frontend')) . $product->getIcon() ?>.png" class="product-tag-image" id="<?php echo $product->getSku(); ?>" style="left: <?php echo $cords[0] ?>px; top: <?php echo $cords[1] + 35 ?>px;"> 
+					<?php endforeach; ?>
+					<div id="pop-up">
+							 
+					</div>
+					<div class="look-description-title"><?php echo $this->__('Description :') ?></div>	
+					<div class="look-description"><?php echo $look->getdesc(); ?></div>
+				</div>
+					
+					<?php $skus = array() ?>
+					<?php foreach($this->getProducts() as $product): ?>
+						<?php $skus[] = $product->getSku() ?>
+					<?php endforeach; ?>
+
+				<div class="look-right" style="display:none;">
+					<ul class="look-list">
+					<?php foreach($this->getRealProducts($skus) as $_product): ?>
+						<li class="item" id=<?php echo 'i'.$_product->getSku(); ?>>
+						 <div align="center">	
+						   <a class="product-image" title="<?php echo $this->stripTags($this->getImageLabel($_product, 'small_image'), null, true) ?>" href="<?php echo $_product->getProductUrl() ?>">
+					  
+								<?php
+								
+									$image= Mage::getModel('catalog/product')->load($_product->getId())->getMediaGalleryImages();
+									$_images = $image->getItemByColumnValue('label','#');									
+									
+									if(is_object($_images)):
+										if($_images->getData('label')=='#'):										
+								?>		
+											<img src="<?php echo $_images->getData('url'); ?>" />	
+								<?php		
+										endif;									
+									else:
+								?>
+										<div><?php echo $this->__('Tagged image is missing') ?></div>
+								<?php
+									endif;
+								?>		
+							
+						  </a>	
+						 </div>
+						</li>
+					<?php endforeach ;?>
+					</ul>
+				</div>
+
+				<script type="text/javascript">
+				var popLeft = popTop = baseImgWidth = baseImgHeight = popUpHeight = 0;
+				var offset ,tag,tagPosition;
+				jQuery(document).ready(function() {      
+					 
+					jQuery('.product-tag-image').mouseover(function(e) {			
+							
+								
+							jQuery('#pop-up').html(jQuery('#i'+jQuery(this).attr('id')).html());
+								
+							jQuery('div#pop-up').show();			 
+							 
+							tag = jQuery(this);
+							tagPosition = tag.position();				
+							
+							offset = tag.height();
+							
+							baseImgWidth = jQuery('#main-look-img').width();				
+							baseImgHeight = jQuery('#main-look-img').height();				
+								
+								
+							popUpWidth = jQuery('#pop-up').width();	
+							popUpHeight = jQuery('#pop-up').height();					
+							
+							popTop = tagPosition.top+offset;
+							popLeft = tagPosition.left;
+							
+						/* 	if( (tagPosition.left+popUpWidth) > baseImgWidth)
+							{
+									popLeft = popLeft - popUpWidth;
+							}
+							if( (tagPosition.top+popUpHeight)> baseImgHeight)
+							{
+								   popTop = popTop - popUpHeight;
+							}
+ */
+								
+							jQuery('div#pop-up').css('top',popTop ).css('left', popLeft);
+							 
+					   }		
+					); 
+					
+					jQuery("div#pop-up").mouseleave(function(){
+						jQuery(this).hide();
+					});					
+							/* Hiding the tagged image on moving out of main image */
+					jQuery("#main-look-img").mouseleave(function(){
+						jQuery("div#pop-up").hide();
+					});
+					
+					jQuery('.product-tag-image').mouseleave(function(e) {
+						jQuery("div#pop-up").hide();
+					});
+				});
+				</script>					
+<?php else: ?>
+			<?php $message = $this->__('Requested look not available'); ?>
+			<?php echo $this->getLayout()->createBlock('core/messages')->addNotice($message)->toHtml(); ?>	
+<?php endif; ?>

@@ -1,0 +1,43 @@
+<?php 
+$lookId = $this->getRequest()->getParam('id');
+$lookProdColl = Mage::getModel('look/product')->getCollection()->addFieldToFilter('look_id', array( 'eq'=>$lookId ));
+?>
+<div class="block-left-filter">					
+		<span><a href="<?php echo Mage::getBaseUrl('web') ?>look/index/list"><?php echo $this->__('Back To Look Gallery')?></a></span>					
+		
+		<?php $collection = Mage::getModel('look/look')->getCollection()->addFieldToFilter('look_id',$lookId)->addFieldToFilter('status',array('eq'=>2));					
+		    if($collection->getData()):
+		?>			
+				<?php if(count($lookProdColl)): ?>
+						<div class="block-title">
+								<strong><?php echo $this->__('Products in this look')?></strong>					
+						</div>		
+						<ul class="lookfilterside stripview">
+							<?php foreach($lookProdColl as $lookProd):
+											
+								$skuInLook = $lookProd->getSku();
+								
+								$actualProd = Mage::getModel('catalog/product')->loadByAttribute('sku',$skuInLook);
+							?>	
+							<li class = "lookprod" >					
+								<img src="<?php echo $this->getSkinUrl('images/look/', array('_area'=>'frontend')) . $lookProd->getIcon() ?>.png"   class="prodTag" /> 						
+
+								<a href="<?php echo $actualProd->getProductUrl() ?>" ><img src="<?php echo  Mage::Helper('catalog/image')->init($actualProd, 'small_image')->resize(100,100); ?>" /></a>								
+								<h2 class="product-name"><a href="<?php echo $actualProd->getProductUrl() ?>"><?php echo $actualProd->getName(); ?></a></h2>						
+
+									<?php if( $actualProd->getTypeId() == 'simple' ): ?>
+											<p><?php echo Mage::helper('core')->currency( $actualProd->getFinalPrice(), true, false);?></p>
+											<div class="actions">
+												<p>
+													<?php if($actualProd->isSaleable()): ?>
+															<button type="button" title="<?php echo $this->__('Add to Cart') ?>" class="button btn-cart" onclick="setLocation('<?php echo $this->getAddToCartUrl($actualProd) ?>')"><span><span><?php echo $this->__('Add to Cart') ?></span></span></button>  									
+													<?php endif; ?>								
+												</p>
+											</div>
+									<?php endif; ?>				
+							</li>	
+							<?php endforeach; ?>	
+						</ul>
+				<?php endif; ?>			
+		<?php endif; ?>						
+</div>		

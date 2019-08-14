@@ -1,0 +1,373 @@
+
+<?php $id = $this->getRequest()->getParam('id') ?>
+<?php if(!$id): ?>
+	<?php echo "Input information and image in 'Look' tab and save before adding products to this look." ?>
+<?php else: ?>
+	<?php $look = $this->getLook($id) ?>
+	<?php if(!$look->getFilename()): ?>
+		<?php echo "Upload image in 'Look' tab and save before adding products to this look." ?>
+	<?php else: ?>
+	<?php $products = $this->getProducts() ?>
+	<script>
+	var i = <?php echo count($products) + 1 ?>;
+	
+	pi = -1;
+
+
+	var img,span;
+	function addProduct() {
+		if(pi==i)
+			return true;
+		if($('look-image-tag').readAttribute('src') == '') {
+			alert('No image has been uploaded. Choose and image and save before adding products.');
+		} else {
+			//add the new product field and tag here
+			$('icon').value = i;
+			var str = i + '.png';
+			var imageattrs = {
+                src   : '<?php echo $this->getSkinUrl('images/look/', array('_area'=>'frontend')) ?>' + str,
+            };
+			var removeimageattrs = {
+                src   : '<?php echo $this->getSkinUrl('images/look/myl_remove.png', array('_area'=>'frontend')) ?>',
+				width : '20px',
+				height : '20px',
+				id :  i,
+				class : 'remove-tag',
+				onclick : 'removeTagProduct(this)'
+            };
+			var spanattrs = {
+                class : 'product-tag-image',
+                id	  : 'product-tag-image' + i,
+            };
+            span=new Element('span',spanattrs);
+			img = new Element('img', imageattrs);
+			removeimg = new Element('img', removeimageattrs);
+            $('image-list').insert(span);
+			$('product-tag-image' + i).insert(img);
+			$('product-tag-image' + i).insert(removeimg);
+			$('add-fields').show();
+			makeDraggable('product-tag-image' + i);
+            pi = i;
+		}
+	}
+	
+	function removeTagProduct(tag)
+	{
+		var cfm=confirm("Are you sure? you want to remove the tag!")
+		if(cfm==true) {
+		var id ='product-tag-image'+tag.readAttribute('id');
+		var ele = document.getElementById(id);
+
+		var params = {};
+			params['id'] = <?php echo $look->getId() ?>;
+			params['element'] = id;
+		new Ajax.Request('<?php echo Mage::getModel('adminhtml/url')->getUrl('look/adminhtml_look/removetag') ?>', {
+				method: 'get',
+				parameters: params,
+				onSuccess: function(transport) {
+    				ele.remove();
+					pi = -1;
+					i--;
+					//alert(i+" "+pi);
+					//alert(transport.responseText);
+				}
+			});
+		}
+		
+	}
+	
+
+	function makeDraggable(elem) {
+		var e = document.getElementById(elem);
+		Drag.init(e);
+		e.onDragEnd = function(x, y) {
+			var params = {};
+			params['id'] = <?php echo $look->getId() ?>;
+			params['x'] = x;
+			params['y'] = y;
+			params['element'] = elem;
+			new Ajax.Request('<?php echo Mage::getModel('adminhtml/url')->getUrl('look/adminhtml_look/savecords') ?>', {
+				method: 'get',
+				parameters: params,
+				onSuccess: function(transport) {
+    				//alert(transport.responseText);
+				}
+			});	
+		}
+	}
+	
+	function saveProduct() {
+		var params = {};
+		params['id'] = <?php echo $look->getId() ?>;
+		params['icon'] = $('icon').value;
+		params['x'] = $('product-tag-image'+$('icon').value).offsetLeft;
+		params['y'] = $('product-tag-image'+$('icon').value).offsetTop;
+		params['sku'] = $('sku').value;
+		params['desc'] = $('descrip').value;
+
+		
+		new Ajax.Request('<?php echo Mage::getModel('adminhtml/url')->getUrl('look/adminhtml_look/saveproduct') ?>', {
+			method: 'get',
+			parameters: params,
+			onSuccess: function(transport) {
+				if(transport.responseText == 'error') {
+					$(img).remove();
+					$(removeimg).remove();
+					$('add-fields').hide();
+					//alert('Try checking to make sure your SKU is correct.');
+					alert('No Record exists.');
+					pi = -1 ;
+				}
+				if(transport.responseText == 'error_1') {
+					$(img).remove();
+					$(removeimg).remove();
+					$('add-fields').hide();
+					//alert('Try checking to make sure your SKU is correct.');
+					alert('Product image labeled as # does not exist for this product in image gallery');
+					pi = -1;
+				}	
+				else {
+					//alert(transport.responseText);
+					var data = JSON.parse(transport.responseText);
+					$(data.iconid).insert({before:'<img src='+data.imgurl+' />'});
+					//alert(data.imgurl);
+					$('sku').value = '';
+					$('icon').value = '';
+					$('descrip').value = '';
+
+					$('add-fields').hide();
+					pi=i;
+					i++;
+					//$('product-list').insert(transport.responseText);
+				}
+			}
+		});	
+	}
+	</script>
+	<script>
+	var Drag = {
+	
+		obj : null,
+	
+		init : function(o, oRoot, minX, maxX, minY, maxY, bSwapHorzRef, bSwapVertRef, fXMapper, fYMapper)
+		{
+			o.onmousedown	= Drag.start;
+	
+			o.hmode			= bSwapHorzRef ? false : true ;
+			o.vmode			= bSwapVertRef ? false : true ;
+	
+			o.root = oRoot && oRoot != null ? oRoot : o ;
+	
+			if (o.hmode  && isNaN(parseInt(o.root.style.left  ))) o.root.style.left   = "0px";
+			if (o.vmode  && isNaN(parseInt(o.root.style.top   ))) o.root.style.top    = "0px";
+			if (!o.hmode && isNaN(parseInt(o.root.style.right ))) o.root.style.right  = "0px";
+			if (!o.vmode && isNaN(parseInt(o.root.style.bottom))) o.root.style.bottom = "0px";
+	
+			o.minX	= typeof minX != 'undefined' ? minX : null;
+			o.minY	= typeof minY != 'undefined' ? minY : null;
+			o.maxX	= typeof maxX != 'undefined' ? maxX : null;
+			o.maxY	= typeof maxY != 'undefined' ? maxY : null;
+	
+			o.xMapper = fXMapper ? fXMapper : null;
+			o.yMapper = fYMapper ? fYMapper : null;
+	
+			o.root.onDragStart	= new Function();
+			o.root.onDragEnd	= new Function();
+			o.root.onDrag		= new Function();
+		},
+	
+		start : function(e)
+		{
+			var o = Drag.obj = this;
+			e = Drag.fixE(e);
+			var y = parseInt(o.vmode ? o.root.style.top  : o.root.style.bottom);
+			var x = parseInt(o.hmode ? o.root.style.left : o.root.style.right );
+			o.root.onDragStart(x, y);
+	
+			o.lastMouseX	= e.clientX;
+			o.lastMouseY	= e.clientY;
+	
+			if (o.hmode) {
+				if (o.minX != null)	o.minMouseX	= e.clientX - x + o.minX;
+				if (o.maxX != null)	o.maxMouseX	= o.minMouseX + o.maxX - o.minX;
+			} else {
+				if (o.minX != null) o.maxMouseX = -o.minX + e.clientX + x;
+				if (o.maxX != null) o.minMouseX = -o.maxX + e.clientX + x;
+			}
+	
+			if (o.vmode) {
+				if (o.minY != null)	o.minMouseY	= e.clientY - y + o.minY;
+				if (o.maxY != null)	o.maxMouseY	= o.minMouseY + o.maxY - o.minY;
+			} else {
+				if (o.minY != null) o.maxMouseY = -o.minY + e.clientY + y;
+				if (o.maxY != null) o.minMouseY = -o.maxY + e.clientY + y;
+			}
+	
+			document.onmousemove	= Drag.drag;
+			document.onmouseup		= Drag.end;
+	
+			return false;
+		},
+	
+		drag : function(e)
+		{
+			e = Drag.fixE(e);
+			var o = Drag.obj;
+	
+			var ey	= e.clientY;
+			var ex	= e.clientX;
+			var y = parseInt(o.vmode ? o.root.style.top  : o.root.style.bottom);
+			var x = parseInt(o.hmode ? o.root.style.left : o.root.style.right );
+			var nx, ny;
+	
+			if (o.minX != null) ex = o.hmode ? Math.max(ex, o.minMouseX) : Math.min(ex, o.maxMouseX);
+			if (o.maxX != null) ex = o.hmode ? Math.min(ex, o.maxMouseX) : Math.max(ex, o.minMouseX);
+			if (o.minY != null) ey = o.vmode ? Math.max(ey, o.minMouseY) : Math.min(ey, o.maxMouseY);
+			if (o.maxY != null) ey = o.vmode ? Math.min(ey, o.maxMouseY) : Math.max(ey, o.minMouseY);
+	
+			nx = x + ((ex - o.lastMouseX) * (o.hmode ? 1 : -1));
+			ny = y + ((ey - o.lastMouseY) * (o.vmode ? 1 : -1));
+	
+			if (o.xMapper)		nx = o.xMapper(y)
+			else if (o.yMapper)	ny = o.yMapper(x)
+	
+			Drag.obj.root.style[o.hmode ? "left" : "right"] = nx + "px";
+			Drag.obj.root.style[o.vmode ? "top" : "bottom"] = ny + "px";
+			Drag.obj.lastMouseX	= ex;
+			Drag.obj.lastMouseY	= ey;
+	
+			Drag.obj.root.onDrag(nx, ny);
+			return false;
+		},
+	
+		end : function()
+		{
+			document.onmousemove = null;
+			document.onmouseup   = null;
+			Drag.obj.root.onDragEnd(	parseInt(Drag.obj.root.style[Drag.obj.hmode ? "left" : "right"]), 
+										parseInt(Drag.obj.root.style[Drag.obj.vmode ? "top" : "bottom"]));
+			Drag.obj = null;
+		},
+	
+		fixE : function(e)
+		{
+			if (typeof e == 'undefined') e = window.event;
+			if (typeof e.layerX == 'undefined') e.layerX = e.offsetX;
+			if (typeof e.layerY == 'undefined') e.layerY = e.offsetY;
+			return e;
+		}
+	};
+	function removeTag(ele)
+	{
+		var cfm=confirm("Are you sure? you want to remove the tag!")
+		if(cfm==true) {
+		var params = {};
+			params['id'] = <?php echo $look->getId() ?>;
+			params['element'] = ele;
+		new Ajax.Request('<?php echo Mage::getModel('adminhtml/url')->getUrl('look/adminhtml_look/removetag') ?>', {
+				method: 'get',
+				parameters: params,
+				onSuccess: function(transport) {
+    				$(ele).remove();
+					i--;
+					//alert(transport.responseText);
+				}
+			});
+		}
+		
+	}
+	</script>
+
+	
+	<div style="" id="look_tabs_form_section_content">
+		<div class="entry-edit">
+			<div class="entry-edit-head">
+				<h4 class="icon-head head-edit-form fieldset-legend"><?php echo $this->__('Look Products') ?></h4>
+			</div>
+			<div id="look_form" class="fieldset ">
+				<div class="hor-scroll">
+					<div style="position:relative; width:350px; float:left;">
+						<div id="look-image">
+							<img src="<?php echo Mage::getBaseUrl('media') ?>look/<?php echo $look->getFilename() ?>" id="look-image-tag" />
+							<div id="image-list">
+								<?php foreach($products as $product): ?>
+									<?php $cords = explode(",", $product->getIconLocation()) ?>
+									<span class="product-tag-image" id="product-tag-image<?php echo $product->getIcon() ?>" style="left: <?php echo $cords[0] ?>px; top: <?php echo $cords[1] ?>px;"> 
+										<img id="<?php echo $product->getIcon().'tag'; ?>" class="tag_icon" src="<?php echo $this->getSkinUrl('images/look/', array('_area'=>'frontend')) . $product->getIcon() ?>.png" />
+										<?php $sku = $product->getSku();
+											  $realProduct = Mage::getModel('catalog/product')->loadByAttribute('sku',$sku);
+										
+											$image= Mage::getModel('catalog/product')->load($realProduct->getId())->getMediaGalleryImages();
+											$_images = $image->getItemByColumnValue('label','#');									
+											if(is_object($_images)):
+												if($_images->getData('label')=='#'):				
+										?>	
+													<img id= "<?php echo $product->getSku(); ?>"  src= "<?php echo $_images->getData('url'); ?>  "/>
+										<?php
+												endif;	
+											else:
+										?>
+													<div id="missing"><?php echo $this->__('Product image with label # is missing') ?></div>
+										<?php	
+											endif;
+										?>	
+	
+										<img class="closeimage" src="<?php echo $this->getSkinUrl('images/look/myl_remove.png', array('_area'=>'frontend')) ?>" onclick="removeTag('product-tag-image<?php echo $product->getIcon() ?>')"/>
+									</span>
+									<script>
+										makeDraggable('product-tag-image' + <?php echo $product->getIcon() ?>);
+									</script>
+								<?php endforeach ?>
+							</div>
+						</div>
+
+						<br /><a href="javascript:void(0);" onclick="addProduct();" id="add-product-btn"><?php echo $this->__('Add Product') ?></a><br />
+						<div id="add-fields" style="display:none;">
+							<table>
+								<tr>
+									<td><?php echo $this->__('Product SKU:') ?></td>
+									<td><input id="sku" type="text" /></td>
+									<input type="hidden" id="icon" value="" />
+									<input id="descrip" type="hidden" value="" />
+									<td><label id="sku-message"><?php echo $this->__('Add single sku at a time') ?></label></td>
+								</tr>																								
+								<tr>
+									<td colspan="2"><button type="button" onclick="saveProduct();"><?php echo $this->__('Save Product') ?></button></td>
+								</tr>
+							</table>
+						</div>
+					</div>
+					<div id="product-list">
+						<?php foreach($products as $product): ?>
+							<div class="list-icon">
+								<img src="<?php echo $this->getSkinUrl('images/look/', array('_area'=>'frontend')) . $product->getIcon() ?>.png" /> 
+							</div>
+							<div class="list-details">
+								<h5><?php echo $product->getSku();?></h5>
+								<span><?php /* echo $product->getDesc() */ ?></span>
+							</div>
+						<?php endforeach ?>
+					</div>
+		    	</div>
+			</div>
+		</div>
+	</div>
+	
+	
+	
+	<style>
+		#look-image-tag		{position: relative; top: 0px; left: 0px;}
+		#add-product-btn	{margin-top: 5px; margin-left: 5px;}
+		.product-tag-image	{position: absolute; top: 0px; left: 0px;}
+		.product-tag-image { width:27px; height:80px; margin:0;}
+		.product-tag-image:hover .closeimage{display:block; cursor:pointer; }
+		.product-tag-image .closeimage { width:20px; height:20px; position:absolute; top:50px; left:2px; display:none;}
+		#product-list		{float:right; width: auto;}
+		.list-details		{margin: -25px 0px 0px 30px;}
+		.list-icon			{margin-top: 20px;}
+		#missing            {width:100px;}
+		.tag_icon           {z-index:99999;} 
+		#sku-message	    {font-size:11px;}
+	</style>
+	<?php endif ?>
+<?php endif ?>

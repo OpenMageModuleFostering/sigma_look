@@ -1,0 +1,20 @@
+<?php         
+	$lookCategories = Mage::getModel('look/category')->getCollection()->addFieldToFilter('enabled',array('eq'=>1))->addOrder('sort_order','ASC');
+ ?>
+ <?php if(count($lookCategories)): ?>
+		<div class="block-left-filter">					
+			<div class ="block-title">
+				<strong><?php echo $this->__('Narrow Your Results')?></strong>
+			</div>
+			<ul class = "lookfilterside  catfilter">
+			<?php foreach($lookCategories as $lookCategory): ?>
+				<?php $categoryTotalLook = count(Mage::getModel('look/look')->getCollection()->addFieldToFilter('category',array('eq'=> $lookCategory->getCategoryId())) ); ?>
+				<li>
+					<input  name="<?php echo $lookCategory->getCategoryName(); ?>" type="checkbox" class="filter" value="<?php echo $lookCategory->getCategoryId() ?>" catlookcount = "<?php echo $categoryTotalLook; ?>" />
+					<a class="filter1" href="javascript:void(0)" id="<?php echo $lookCategory['category_id']; ?>" > <?php  echo $lookCategory->getCategoryName(); ?> </a>			
+				</li>
+			
+			<?php endforeach; ?>
+			</ul>
+		</div>			
+<?php endif; ?>

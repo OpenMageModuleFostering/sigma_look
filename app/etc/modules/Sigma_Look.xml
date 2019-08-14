@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <Sigma_Look>
+            <active>true</active>
+            <codePool>community</codePool>
+        </Sigma_Look>
+    </modules>
+</config>

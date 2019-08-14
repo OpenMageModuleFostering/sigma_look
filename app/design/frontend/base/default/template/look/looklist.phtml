@@ -1,0 +1,115 @@
+	<?php 	
+	$listlimit = Mage::getStoreConfig('two/three/text2') ? Mage::getStoreConfig('two/three/text2') : 4;
+	$looksPageCount = floor((Mage::getModel('look/look')->getCollection()->count()))/$listlimit; 	?>
+	
+	<div id="loadingImage">	
+		<img src = "<?php echo $this->getSkinUrl('images/look/ajax-loader_1.gif');?>" />
+	</div>	
+	<div class="listhead"><?php echo $this->__('Looks') ?> </div>
+	<div id="looklist">	
+	<?php
+		echo $this->getLayout()->createBlock('look/look')->setTemplate('look/list.phtml')->toHtml();
+	 ?>
+	 </div>
+	 
+	<script type="text/javascript">
+
+	var i=1;
+
+	var stop=0;
+
+	var chk=0;
+
+	var id;
+
+	var scrollLimit = <?php echo $looksPageCount ?>;
+	
+	var totalLookCount = 0;
+	
+	var sum=0; /*Total look in category*/
+	
+	function lastAddedLiveFunc()
+	{
+		
+		jQuery('#loadingImage').show();
+
+		chk=1;
+
+		jQuery.get("<?php echo $this->getUrl('look/index/ajax') ?>", {page:i,cat:id},function(data){
+
+			if (data != "" && data != 0) {
+
+				jQuery("#looklist").append(data);
+				
+				jQuery('#loadingImage').hide();
+
+			}      									
+			if(data==0 || i > scrollLimit)
+
+				stop=1;
+				
+			jQuery('#loadingImage').hide();
+			
+			chk=0;
+
+		});
+
+		i++;
+
+	}
+
+	jQuery(document).ready(function(){				
+				var $checks = jQuery('.filter').change(function () {
+					i=1;
+					stop=0;
+					chk=0;
+					sum=0;
+					id= $checks.filter(':checked').map(function () {
+						sum = sum + parseInt(jQuery(this).attr('catlookcount'));													
+					return this.value;
+					}).get().join(',');
+					//sum = sum/4;
+					sum = sum/<?php echo $listlimit; ?>
+
+				jQuery('#loadingImage').show();
+				
+				jQuery.get('<?php echo $this->getUrl('look/index/ajax') ?>',{page:i-1,cat:id},function(data){
+				
+					jQuery('#loadingImage').hide();	
+
+					data=jQuery.trim(data);
+						
+					if (data) {						
+						jQuery('#looklist').html(data);
+					} else {						 
+						 jQuery('#looklist').html('<p id = "no-look">No Looks available</p>');
+					}					
+				});
+			});	
+
+
+	  jQuery(window).scroll(function(){										
+		  var wintop = jQuery(window).scrollTop(), docheight = jQuery('body').height(), winheight = jQuery(window).height();
+				
+		  var  scrolltrigger = 0.1;		
+		if  ((wintop/(docheight-winheight)) > scrolltrigger) {				
+			 if(stop==0 && chk==0)
+			{
+				
+				/* console.log(i+" "+sum); */
+				if(sum==0)
+					lastAddedLiveFunc();
+				if(i<sum) {
+					lastAddedLiveFunc();
+				}
+				
+
+			}   
+
+		  }
+			
+	  });
+
+	});
+
+	</script>	
