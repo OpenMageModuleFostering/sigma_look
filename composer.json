@@ -1,16 +1,19 @@
 {
-    "name": "OpenMageModuleFostering/Sigma_Look",
+    "name": "OpenMageModuleFostering\/Sigma_Look",
     "type": "magento-module",
     "license": "GNU-General-Public-License-(GPL)",
     "homepage": "",
     "description": "Look is pictorial representation of a product in actual usage environment.",
     "authors": [
-    {
-        "name": "Manoj",
-        "email": "mmathew@sigmainfo.net"
-    }
-],
+        {
+            "name": "Manoj",
+            "email": "mmathew@sigmainfo.net"
+        }
+    ],
     "suggest": {
-        "magento-hackathon/magento-composer-installer": "*"
-    }
+        "magento-hackathon\/magento-composer-installer": "*"
+    },
+    "keywords": [
+        "openmage-module"
+    ]
 }
